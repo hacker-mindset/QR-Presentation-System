@@ -1,0 +1,6 @@
+﻿Flask
+qrcode
+Pillow
+pypdf
+PyMuPDF
+python-pptx

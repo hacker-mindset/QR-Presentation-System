@@ -1,0 +1,1006 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QR Presentation System</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #0b1020;
+            color: white;
+            overflow: hidden;
+        }
+
+
+        /* =========================
+           WAITING SCREEN
+        ========================= */
+
+        #waitingScreen {
+
+            width: 100vw;
+            height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+        }
+
+        .title {
+
+            font-size: 42px;
+            font-weight: bold;
+
+            margin-bottom: 10px;
+
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+
+            font-size: 24px;
+
+            margin-bottom: 25px;
+
+            opacity: 0.9;
+        }
+
+        .qr-box {
+
+            background: white;
+
+            padding: 18px;
+
+            width: min(70vh, 70vw);
+            height: min(70vh, 70vw);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .qr-box img {
+
+            width: 100%;
+            height: 100%;
+
+            display: block;
+        }
+
+        .scan-text {
+
+            font-size: 22px;
+
+            margin-top: 25px;
+        }
+
+        .waiting {
+
+            margin-top: 15px;
+
+            font-size: 18px;
+
+            opacity: 0.7;
+        }
+
+
+        /* =========================
+           PRESENTATION SCREEN
+        ========================= */
+
+        #presentationScreen {
+
+            display: none;
+
+            width: 100vw;
+            height: 100vh;
+
+            background: #000;
+        }
+
+        .top-bar {
+
+            height: 70px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 25px;
+
+            background: #111827;
+        }
+
+        .system-name {
+
+            font-size: 24px;
+
+            font-weight: bold;
+        }
+
+        .student-info {
+
+            text-align: center;
+        }
+
+        .student-name {
+
+            font-size: 20px;
+
+            font-weight: bold;
+        }
+
+        .connected {
+
+            font-size: 14px;
+
+            color: #7CFC00;
+
+            margin-top: 3px;
+        }
+
+        .logout-btn {
+
+            border: none;
+
+            background: #dc2626;
+
+            color: white;
+
+            padding: 12px 22px;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+
+            background: #b91c1c;
+        }
+
+
+        /* =========================
+           SLIDE AREA
+        ========================= */
+
+        .slide-area {
+
+            width: 100vw;
+
+            height: calc(100vh - 70px);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #000;
+
+            position: relative;
+        }
+
+        #slideImage {
+
+            max-width: 96vw;
+
+            max-height: calc(100vh - 110px);
+
+            width: auto;
+
+            height: auto;
+
+            object-fit: contain;
+
+            display: none;
+
+            box-shadow:
+                0 0 30px rgba(255,255,255,0.08);
+        }
+
+        .page-number {
+
+            position: absolute;
+
+            bottom: 12px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            background: rgba(17,24,39,0.85);
+
+            padding: 7px 16px;
+
+            border-radius: 20px;
+
+            font-size: 16px;
+        }
+
+
+        /* =========================
+           UPLOAD PROGRESS
+        ========================= */
+
+        #uploadProgressOverlay {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,0.94);
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 100;
+        }
+
+        .upload-progress-box {
+
+            width: min(560px, 82vw);
+
+            text-align: center;
+
+            background: #111827;
+
+            padding: 38px;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .upload-progress-title {
+
+            color: white;
+
+            font-size: 27px;
+
+            font-weight: bold;
+
+            margin-bottom: 20px;
+        }
+
+        .upload-progress-percent {
+
+            color: white;
+
+            font-size: 44px;
+
+            font-weight: bold;
+
+            margin-bottom: 22px;
+        }
+
+        .upload-progress-track {
+
+            width: 100%;
+
+            height: 20px;
+
+            background: #374151;
+
+            border-radius: 12px;
+
+            overflow: hidden;
+        }
+
+        .upload-progress-fill {
+
+            height: 100%;
+
+            width: 0%;
+
+            background: #2563eb;
+
+            border-radius: 12px;
+
+            transition: width 0.15s ease;
+        }
+
+
+        /* =========================
+           LOGOUT MODAL
+        ========================= */
+
+        #logoutModal {
+
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,0.75);
+
+            align-items: center;
+            justify-content: center;
+
+            z-index: 200;
+        }
+
+        .logout-modal-box {
+
+            width: min(430px, 90vw);
+
+            background: white;
+
+            color: #111827;
+
+            padding: 30px;
+
+            border-radius: 15px;
+
+            text-align: center;
+
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .logout-modal-box h2 {
+
+            margin-top: 0;
+
+            margin-bottom: 12px;
+        }
+
+        .logout-modal-box p {
+
+            margin-bottom: 25px;
+
+            color: #4b5563;
+
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+
+            display: flex;
+
+            gap: 12px;
+
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+
+            border: none;
+
+            padding: 11px 20px;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+
+            background: #e5e7eb;
+
+            color: #111827;
+        }
+
+        .confirm-btn {
+
+            background: #dc2626;
+
+            color: white;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .title {
+
+                font-size: 30px;
+            }
+
+            .subtitle {
+
+                font-size: 18px;
+            }
+
+            .scan-text {
+
+                font-size: 18px;
+            }
+
+            .top-bar {
+
+                padding: 0 12px;
+            }
+
+            .system-name {
+
+                font-size: 17px;
+            }
+
+            .student-name {
+
+                font-size: 16px;
+            }
+
+            .logout-btn {
+
+                padding: 9px 13px;
+
+                font-size: 13px;
+            }
+
+        }
+
+    </style>
+<style>
+.fullscreen-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.fullscreen-btn:hover {
+    opacity: 0.9;
+}
+</style>
+<style>
+.qr-top-controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+</style>
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         WAITING / QR SCREEN
+    ========================= -->
+
+    <div id="waitingScreen">
+
+        <div class="title">
+            QR Presentation System
+        </div>
+
+        <div class="subtitle">
+            Scan QR Code to Start
+        </div>
+
+        <div class="qr-box">
+
+            <img
+                id="qrImage"
+                src="data:image/png;base64,{{ qr_image }}"
+                alt="Presentation QR Code"
+            >
+
+        </div>
+
+                <div class="qr-top-controls">            <button class="fullscreen-btn" onclick="toggleFullscreen()">Full Screen</button>        </div>        <div class="scan-text">
+            Scan this QR code with your phone
+        </div>
+
+        <div class="waiting">
+            Waiting for student presentation...
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PRESENTATION SCREEN
+    ========================= -->
+
+    <div id="presentationScreen">
+
+        <div class="top-bar">
+
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">Full Screen</button>
+
+            <div class="system-name">
+                QR Presentation
+            </div>
+
+            <div class="student-info">
+
+                <div
+                    class="student-name"
+                    id="studentName"
+                >
+                    Student
+                </div>
+
+                <div class="connected">
+                    Presentation Connected
+                </div>
+
+            </div>
+
+            <button
+                class="logout-btn"
+                onclick="openLogoutModal()"
+            >
+                Logout
+            </button>
+
+        </div>
+
+
+        <div class="slide-area">
+
+            <img
+                id="slideImage"
+                src=""
+                alt="Presentation Slide"
+            >
+
+            <div
+                class="page-number"
+                id="pageNumber"
+            >
+                Page 1 / 1
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         UPLOAD PROGRESS
+    ========================= -->
+
+    <div id="uploadProgressOverlay">
+
+        <div class="upload-progress-box">
+
+            <div class="upload-progress-title">
+                Student is uploading presentation...
+            </div>
+
+            <div
+                class="upload-progress-percent"
+                id="uploadProgressPercent"
+            >
+                0%
+            </div>
+
+            <div class="upload-progress-track">
+
+                <div
+                    class="upload-progress-fill"
+                    id="uploadProgressFill"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         LOGOUT MODAL
+    ========================= -->
+
+    <div id="logoutModal">
+
+        <div class="logout-modal-box">
+
+            <h2>
+                End Presentation?
+            </h2>
+
+            <p>
+                This will end the current presentation
+                and create a new QR code.
+            </p>
+
+            <div class="modal-buttons">
+
+                <button
+                    class="cancel-btn"
+                    onclick="closeLogoutModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="confirm-btn"
+                    onclick="confirmLogout()"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /* =========================
+           VARIABLES
+        ========================= */
+
+        const waitingScreen =
+            document.getElementById("waitingScreen");
+
+        const presentationScreen =
+            document.getElementById("presentationScreen");
+
+        const studentName =
+            document.getElementById("studentName");
+
+        const pageNumber =
+            document.getElementById("pageNumber");
+
+        const slideImage =
+            document.getElementById("slideImage");
+
+        const uploadProgressOverlay =
+            document.getElementById("uploadProgressOverlay");
+
+        const uploadProgressPercent =
+            document.getElementById("uploadProgressPercent");
+
+        const uploadProgressFill =
+            document.getElementById("uploadProgressFill");
+
+        const logoutModal =
+            document.getElementById("logoutModal");
+
+
+        let lastConnected = false;
+
+        let lastPage = 0;
+
+        let currentToken = "";
+let lastQrToken = "";
+
+
+        /* =========================
+           CHECK STATE
+        ========================= */
+
+        async function checkState() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/state",
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+
+                /* =========================
+                   UPLOAD PROGRESS
+                ========================= */
+
+                if (data.uploading) {
+
+                    /* Hide QR immediately */
+
+                    waitingScreen.style.display =
+                        "none";
+
+                    presentationScreen.style.display =
+                        "none";
+
+
+                    /* Show upload progress */
+
+                    uploadProgressOverlay.style.display =
+                        "flex";
+
+
+                    const progress =
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                Number(
+                                    data.upload_progress
+                                ) || 0
+                            )
+                        );
+
+
+                    uploadProgressPercent.textContent =
+                        progress + "%";
+
+
+                    uploadProgressFill.style.width =
+                        progress + "%";
+
+
+                    return;
+                }
+
+
+                /* Hide progress overlay */
+
+                uploadProgressOverlay.style.display =
+                    "none";
+
+                uploadProgressFill.style.width =
+                    "0%";
+
+                uploadProgressPercent.textContent =
+                    "0%";
+
+
+                /* =========================
+                   NO STUDENT
+                ========================= */
+
+                if (!data.connected) {
+
+            if (data.token && data.token !== lastQrToken) {
+                try {
+                    const qrResponse = await fetch("/api/qr", { cache: "no-store" });
+                    const qrData = await qrResponse.json();
+                    const qrImage = document.getElementById("qrImage");
+                    if (qrImage && qrData.qr_image) {
+                        qrImage.src = "data:image/png;base64," + qrData.qr_image;
+                    }
+                    lastQrToken = qrData.token;
+                } catch (qrError) {
+                    console.log("QR update error:", qrError);
+                }
+            }
+
+
+                    waitingScreen.style.display =
+                        "flex";
+
+                    presentationScreen.style.display =
+                        "none";
+
+                    lastConnected = false;
+
+                    return;
+                }
+
+
+                /* =========================
+                   STUDENT CONNECTED
+                ========================= */
+
+                waitingScreen.style.display =
+                    "none";
+
+                presentationScreen.style.display =
+                    "block";
+
+                lastConnected = true;
+
+                currentToken =
+                    data.token;
+
+
+                studentName.textContent =
+                    data.student_name;
+
+
+                pageNumber.textContent =
+                    "Page " +
+                    data.current_page +
+                    " / " +
+                    data.total_pages;
+
+
+                /* =========================
+                   CHANGE SLIDE
+                ========================= */
+
+                if (
+                    lastPage !==
+                    data.current_page
+                ) {
+
+                    lastPage =
+                        data.current_page;
+                    slideImage.src =
+                        "/slide/" +
+                        data.token +
+                        "/" +
+                        data.current_page;
+
+
+
+                    slideImage.style.display =
+                        "block";
+                }
+
+            }
+
+            catch (error) {
+
+                console.log(
+                    "State check error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /* =========================
+           LOGOUT MODAL
+        ========================= */
+
+        function openLogoutModal() {
+
+            logoutModal.style.display =
+                "flex";
+        }
+
+
+        function closeLogoutModal() {
+
+            logoutModal.style.display =
+                "none";
+        }
+
+
+        /* =========================
+           CONFIRM LOGOUT
+        ========================= */
+
+        async function confirmLogout() {
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/main/logout",
+                        {
+                            method: "POST"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+
+                if (data.success) {
+
+                    closeLogoutModal();
+
+                    lastConnected = false;
+
+                    lastPage = 0;
+
+                    currentToken = "";
+
+                    
+                }
+
+            }
+
+            catch (error) {
+
+                alert(
+                    "Could not end presentation."
+                );
+
+                console.log(error);
+            }
+
+        }
+
+
+        /* =========================
+           AUTO UPDATE
+        ========================= */
+
+        checkState();
+
+        setInterval(
+            checkState,
+            700
+        );
+
+    </script>
+
+
+<script>
+function toggleFullscreen() {
+
+    if (!document.fullscreenElement) {
+
+        document.documentElement.requestFullscreen();
+
+    } else {
+
+        document.exitFullscreen();
+
+    }
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
