@@ -109,3 +109,21 @@ Rajendra Sahu
 ## License
 
 This project is currently shared for learning and portfolio purposes.
+
+## Screenshots
+
+### Main QR Screen
+
+![Main QR Screen](screenshots/01-main-qr-screen.jpeg)
+
+### Mobile Upload
+
+![Mobile Upload](screenshots/02-mobile-upload.jpeg)
+
+### Main Presentation
+
+![Main Presentation](screenshots/03-main-presentation.jpeg)
+
+### Mobile Presentation Control
+
+![Mobile Presentation Control](screenshots/04-mobile-control.jpeg)
